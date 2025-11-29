@@ -4,6 +4,10 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 import re
+import hashlib
+import hmac
+import base64
+import secrets
 
 try:
     dynamodb = boto3.resource("dynamodb")
@@ -85,6 +89,12 @@ def lambda_handler(event, context):
             "LinkedIn", "Slack", "Reddit", "Other"
         ])
 
+    if path == "/api/auth/register" and method == "POST":
+        return register_user(body)
+
+    if path == "/api/auth/login" and method == "POST":
+        return login_user(body)
+
     return respond(404, {"error": "Route not found"})
 
 # ----------------------------
@@ -161,6 +171,107 @@ def create_group(data):
         return respond(400, {"error": "Missing required fields"})
     except Exception:
         return respond(500, {"error": "Failed to create group"})
+
+# ----------------------------
+# AUTHENTICATION
+# ----------------------------
+
+def hash_password(password):
+    salt = secrets.token_hex(16)
+    pwdhash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
+    return salt + pwdhash.hex()
+
+def verify_password(stored_password, provided_password):
+    salt = stored_password[:32]
+    stored_hash = stored_password[32:]
+    pwdhash = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt.encode('utf-8'), 100000)
+    return stored_hash == pwdhash.hex()
+
+def generate_token():
+    return secrets.token_urlsafe(32)
+
+def register_user(data):
+    try:
+        email = data.get("email", "").lower().strip()
+        password = data.get("password", "")
+        name = data.get("name", "").strip()
+        
+        if not email or not password or not name:
+            return respond(400, {"error": "Email, password, and name are required"})
+        
+        if len(password) < 6:
+            return respond(400, {"error": "Password must be at least 6 characters"})
+        
+        # Check if user exists
+        try:
+            existing = users_table.get_item(Key={"id": email})
+            if "Item" in existing:
+                return respond(400, {"error": "User already exists"})
+        except Exception:
+            pass
+        
+        # Create user
+        user_id = str(uuid.uuid4())
+        hashed_password = hash_password(password)
+        token = generate_token()
+        
+        user = {
+            "id": email,
+            "user_id": user_id,
+            "name": name,
+            "email": email,
+            "password": hashed_password,
+            "token": token,
+            "joined_groups": [],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        users_table.put_item(Item=user)
+        
+        # Return user without password
+        user_response = {k: v for k, v in user.items() if k != "password"}
+        return respond(200, user_response)
+        
+    except KeyError:
+        return respond(400, {"error": "Missing required fields"})
+    except Exception as e:
+        return respond(500, {"error": "Registration failed"})
+
+def login_user(data):
+    try:
+        email = data.get("email", "").lower().strip()
+        password = data.get("password", "")
+        
+        if not email or not password:
+            return respond(400, {"error": "Email and password are required"})
+        
+        # Get user
+        user_res = users_table.get_item(Key={"id": email})
+        if "Item" not in user_res:
+            return respond(401, {"error": "Invalid credentials"})
+        
+        user = user_res["Item"]
+        
+        # Verify password
+        if not verify_password(user["password"], password):
+            return respond(401, {"error": "Invalid credentials"})
+        
+        # Generate new token
+        token = generate_token()
+        users_table.update_item(
+            Key={"id": email},
+            UpdateExpression="SET #token = :token",
+            ExpressionAttributeNames={"#token": "token"},
+            ExpressionAttributeValues={":token": token}
+        )
+        
+        # Return user without password
+        user_response = {k: v for k, v in user.items() if k != "password"}
+        user_response["token"] = token
+        return respond(200, user_response)
+        
+    except Exception as e:
+        return respond(500, {"error": "Login failed"})
 
 # ----------------------------
 # USERS

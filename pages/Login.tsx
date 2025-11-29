@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
     
     try {
       const formData = new FormData(e.target as HTMLFormElement);
@@ -18,17 +23,32 @@ const Login: React.FC = () => {
         return;
       }
       
-      // Login logic would go here
-      console.log('Login attempted');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+      
+      // Store user data
+      login(data);
+      navigate('/');
     } catch (error) {
       console.error('Login error:', error);
       if (error instanceof Error) {
         setError(error.message);
-      } else if (typeof error === 'string') {
-        setError(error);
       } else {
         setError('An unexpected error occurred during login');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,8 +95,12 @@ const Login: React.FC = () => {
                 />
              </div>
 
-             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors">
-                Log In
+             <button 
+               type="submit" 
+               disabled={loading}
+               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-bold py-3 rounded-lg transition-colors"
+             >
+                {loading ? 'Logging in...' : 'Log In'}
              </button>
 
              <div className="relative my-6">

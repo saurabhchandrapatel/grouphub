@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User } from '../types';
 import { Search, Menu, X, Bell } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
-interface NavbarProps {
-  user: User;
-}
+interface NavbarProps {}
 
 const Logo = () => (
   <Link to="/" className="flex items-center gap-2 group">
@@ -41,22 +40,54 @@ const SearchBar = ({ searchQuery, setSearchQuery, handleSearch }: {
   </form>
 );
 
-const UserActions = ({ user }: { user: User }) => (
-  <>
-    <Link to="/create" className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
-      Create Group
-    </Link>
-    <button className="relative text-gray-400 hover:text-white transition-colors">
-      <Bell className="w-5 h-5" />
-      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#121212]" />
-    </button>
-    <Link to="/profile" className="block relative">
-      <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full border-2 border-gray-700 hover:border-gray-500 transition-colors object-cover" />
-    </Link>
-  </>
-);
+const UserActions = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+  
+  if (!user) {
+    return (
+      <div className="flex items-center gap-3">
+        <Link to="/login" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+          Log In
+        </Link>
+        <Link to="/signup" className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          Sign Up
+        </Link>
+      </div>
+    );
+  }
+  
+  return (
+    <>
+      <Link to="/create" className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
+        Create Group
+      </Link>
+      <button className="relative text-gray-400 hover:text-white transition-colors">
+        <Bell className="w-5 h-5" />
+        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#121212]" />
+      </button>
+      <div className="relative group">
+        <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`} alt={user.name} className="w-9 h-9 rounded-full border-2 border-gray-700 hover:border-gray-500 transition-colors object-cover cursor-pointer" />
+        <div className="absolute right-0 top-full mt-2 w-48 bg-[#1e1e1e] border border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+          <Link to="/profile" className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-t-lg">
+            Profile
+          </Link>
+          <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-b-lg">
+            Logout
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
 
-const Navbar: React.FC<NavbarProps> = ({ user }) => {
+const Navbar: React.FC<NavbarProps> = () => {
+  const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -81,8 +112,8 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
           </div>
 
           <div className="hidden md:flex items-center gap-4 flex-1 justify-end max-w-2xl ml-8">
-            <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSearch={handleSearch} />
-            <UserActions user={user} />
+            {user && <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSearch={handleSearch} />}
+            <UserActions />
           </div>
 
           <button className="md:hidden text-gray-400" onClick={() => setIsMenuOpen(!isMenuOpen)}>

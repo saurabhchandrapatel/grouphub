@@ -35,7 +35,10 @@ const CreateGroup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const newGroup = await api.createGroup(formData);
+      const newGroup = await api.createGroup({
+        ...formData,
+        platform: formData.platform as any
+      });
       alert("Group created successfully!");
       navigate(`/groups/${newGroup.id}`);
     } catch (error) {

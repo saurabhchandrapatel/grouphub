@@ -24,7 +24,7 @@ jobs:
     - name: Build
       run: npm run build
       env:
-        REACT_APP_API_URL: https://api.grouphub.aktel.in
+        VITE_API_URL: https://api.grouphub.akte.in
     
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -35,8 +35,8 @@ jobs:
     
     - name: Deploy to S3
       run: |
-        aws s3 sync dist/ s3://grouphub.aktel.in --delete
-        aws s3 cp dist/index.html s3://grouphub.aktel.in/index.html --cache-control "no-cache"
+        aws s3 sync dist/ s3://grouphub.akte.in --delete
+        aws s3 cp dist/index.html s3://grouphub.akte.in/index.html --cache-control "no-cache"
     
     - name: Invalidate CloudFront
       run: |

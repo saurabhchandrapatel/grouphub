@@ -24,7 +24,7 @@ jobs:
     - name: Build
       run: npm run build
       env:
-        VITE_API_URL: https://api.grouphub.aktel.in
+        VITE_API_URL: https://gcnk24an01.execute-api.ap-south-1.amazonaws.com/prod/api
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4

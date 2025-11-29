@@ -1,7 +1,6 @@
 import { Group } from './types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://127.0.0.1:8000/api';
-
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://gcnk24an01.execute-api.ap-south-1.amazonaws.com/prod/api';
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const errorText = await response.text().catch(() => 'Unknown error');

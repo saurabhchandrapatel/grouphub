@@ -69,4 +69,4 @@ Create an IAM user with this policy:
 2. Build creates optimized production bundle
 3. Files sync to S3 bucket
 4. CloudFront cache invalidation (if configured)
-5. Site available at https://grouphub.akte.in
+5. Site available at https://grouphub.aktel.in

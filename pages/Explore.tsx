@@ -120,7 +120,6 @@ const Explore: React.FC = () => {
           <EmptyState />
         )}
       </div>
-    // amazonq-ignore-next-line
     </div>
   );
 };

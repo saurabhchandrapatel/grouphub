@@ -102,7 +102,6 @@ const GroupDetail: React.FC = () => {
 
            {/* Tabs Navigation (Visual Only) */}
            <div className="border-b border-gray-800 flex gap-8">
-              // amazonq-ignore-next-line
               <button className="py-3 px-1 border-b-2 border-blue-500 text-blue-400 font-medium">About</button>
               <button className="py-3 px-1 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition-colors font-medium">Members</button>
               <button className="py-3 px-1 border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition-colors font-medium">Events</button>

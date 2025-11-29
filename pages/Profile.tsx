@@ -112,8 +112,7 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
                  <div className="bg-red-900/10 border border-red-900/30 rounded-xl p-6">
                     <h3 className="text-red-400 font-bold mb-2">Delete Account</h3>
                     <p className="text-gray-400 text-sm mb-4">Permanently delete your account and all of your content. This action is not reversible.</p>
-                    // amazonq-ignore-next-line
-                    <button className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors">
+                     <button className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors">
                        Delete My Account
                     </button>
                  </div>

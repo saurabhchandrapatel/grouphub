@@ -259,6 +259,11 @@ def leave_group(user_id, group_id):
 def respond(status, body):
     return {
         "statusCode": status,
-        "headers": {"Content-Type": "application/json"},
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "*"
+        },
         "body": json.dumps(body)
     }
